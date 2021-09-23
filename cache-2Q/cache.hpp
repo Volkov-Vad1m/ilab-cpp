@@ -43,25 +43,33 @@ struct Cache_2Q {
 
     size_t sizeCache;
 
-    QueueMap <Data> In;
-    QueueMap <Data> Out;
-    QueueMap <Data> Hot;
-
+    
     using ListIt = typename std::list<struct Node<Data>>::iterator;
     std::unordered_map<KeyT, ListIt> Hash;
 
-    Cache_2Q(size_t sz)
-    {
-        sizeCache = sz;
-        In.sizeList = sz / 5;
-        Hot.sizeList = sz / 5;
-        Out.sizeList = sz - sz / 5 - sz / 5; 
-    }
+    Cache_2Q(size_t sz) : sizeCache(sz) {}
+    
+    QueueMap <Data> In {sizeCache / 5};
+    QueueMap <Data> Out {sizeCache - sizeCache / 5 - sizeCache / 5};
+    QueueMap <Data> Hot {sizeCache / 5};
 
-    ~Cache_2Q() {}
+
+   
+    // bool find_cache() // проверяет, есть ли в кэше запрос
+    // {
+    //     auto find = Cache.Hash.find(request);
+
+    //     if (find == Cache.Hash.end())
+    //         return false;
+
+    //     else 
+    //         return true;
+    // }
+
 };
 
-}
+};
 
-
-    
+template <typename KeyT, typename Data>
+bool CacheHit (caches::Cache_2Q<KeyT, Data> Cache, Data request);
+ 
