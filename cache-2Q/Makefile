@@ -1,3 +1,3 @@
 all:
-	g++ main.cpp cache.cpp
+	g++ main.cpp
 	./a.out
