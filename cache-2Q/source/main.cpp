@@ -6,7 +6,7 @@ int main()
     size_t numRequest;
     std::cin >> sz >> numRequest;
     
-    int caacheHit = 0;
+    int hits = 0;
     caches::Cache_2Q<int, int> ch{sz}; 
     
     int request;
@@ -16,11 +16,11 @@ int main()
         std::cin >> request;
         if( CacheHit <int, int> (ch, request) )
         {
-            caacheHit+=1;
+            hits += 1;
         }
     } 
    
-    std::cout << caacheHit << std::endl;
+    std::cout << hits << std::endl;
     
     return 0;
 }
