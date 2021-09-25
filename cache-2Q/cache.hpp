@@ -83,17 +83,16 @@ bool CacheHit (caches::Cache_2Q<KeyT, Data> &Cache, Data request)
                 Cache.Out.List.pop_back(); 
             }
             // последний элемент из In переносится в OUT
-            Cache.Out.List.push_front( {backIn->second->data, OUT} );  // вставляем в лист OUT
-            Cache.Hash.erase(backIn); 
-            
-            Cache.Hash.insert({Cache.Out.List.begin()->data, Cache.Out.List.begin()}); 
-            
-            Cache.In.List.pop_back(); 
 
+            // новые изменения
+            backIn->second->place = OUT;
+            Cache.Out.List.splice(Cache.Out.List.begin(), Cache.In.List, backIn->second);
+            
+            
             Cache.In.List.push_front(newPage); 
             auto hashIns = Cache.In.List.begin();
             Cache.Hash.insert({hashIns->data, hashIns} );      
-            
+                        //list.splice(куда вставляем, из какого листа вставляем, что вставляем)
         }
         
         else 
@@ -108,12 +107,12 @@ bool CacheHit (caches::Cache_2Q<KeyT, Data> &Cache, Data request)
 
     else // нашли
     {
-        if(find->second->place == IN)  // работает
+        if(find->second->place == IN)
         {
             return true;
         }
             
-        if(find->second->place == OUT) // не очень работает
+        if(find->second->place == OUT) 
         {
             
             if(Cache.Hot.isfull()) 
@@ -121,14 +120,9 @@ bool CacheHit (caches::Cache_2Q<KeyT, Data> &Cache, Data request)
                 auto backHot = Cache.Hash.find(Cache.Hot.List.back().data); // вытесняем из Hot последний элемент
                 Cache.Hash.erase(backHot); // удаляем из таблицы последний элемент из HOT 
                 Cache.Hot.List.pop_back();
-            }  
-            Cache.Hot.List.push_front( {find->second->data, HOT} ); // вставляем в список
-            auto outIt = find->second;
-            Cache.Hash.erase(find);
-            Cache.Hash.insert({Cache.Hot.List.begin()->data, Cache.Hot.List.begin()}); // или это не надо 
-            
-            Cache.Out.List.erase(outIt);
-
+            } 
+            find->second->place = HOT;
+            Cache.Hot.List.splice(Cache.Hot.List.begin(), Cache.Out.List, find->second);
             return true;
         }
 
