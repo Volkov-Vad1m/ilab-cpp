@@ -1,5 +1,5 @@
 all:
-	g++ main.cpp
+	g++ ./source/main.cpp
 	./a.out <./test/test1.txt
 	./a.out <./test/test2.txt
 	./a.out <./test/test3.txt
@@ -13,7 +13,7 @@ all:
 	cat ./test/answer
 
 valg:
-	g++ main.cpp
+	g++ ./source/main.cpp
 	valgrind ./a.out <./test/test1.txt
 	valgrind ./a.out <./test/test2.txt
 	valgrind ./a.out <./test/test3.txt

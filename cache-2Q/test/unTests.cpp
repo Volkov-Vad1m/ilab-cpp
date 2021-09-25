@@ -1,4 +1,4 @@
-#include "../headers/cache.hpp"
+#include "../cache.hpp"
 #include <random>
 #include <chrono>
 
@@ -41,7 +41,7 @@ int main () {
 
         caches::Cache_2Q<int, int> Cache{cacheSize};
 
-        int result = Cache.CacheHit(numPages);
+        int result = CacheHit<int, int> (numPages);
 
         std::cout <<"Result is : " << result << std::endl;
         finish = get_time();

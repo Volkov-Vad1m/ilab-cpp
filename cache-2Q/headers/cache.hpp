@@ -57,6 +57,10 @@ struct Cache_2Q {
     void Erase (Data data) // удаляет из кэша по данным
     {
         auto delPage = Hash.find(data);
+        if(delPage == Hash.end()) // did not find
+        {
+            return;
+        }
         auto delList = delPage->second;
 
         Hash.erase(delPage);
