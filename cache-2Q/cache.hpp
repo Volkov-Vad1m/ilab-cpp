@@ -53,6 +53,32 @@ struct Cache_2Q {
     QueueMap <Data> Out {sizeCache - sizeCache / 5 - sizeCache / 5};
     QueueMap <Data> Hot {sizeCache / 5};
 
+
+    void Erase (Data data) // удаляет из кэша по данным
+    {
+        auto delPage = Hash.find(data);
+        auto delList = delPage->second;
+
+        Hash.erase(delPage);
+
+        if(delList->place == IN)
+        {
+            In.List.erase(delList);
+            return;
+        }
+
+        if(delList->place == OUT)
+        {
+            Out.List.erase(delList);
+            return;
+        }
+
+        if(delList->place == HOT)
+        {
+            Hot.List.erase(delList);
+            return;
+        }
+    };
 };
 
 };
@@ -77,18 +103,13 @@ bool CacheHit (caches::Cache_2Q<KeyT, Data> &Cache, Data request)
         
             if(Cache.Out.isfull()) // если Out полон
             {
-                auto backOut = Cache.Hash.find(Cache.Out.List.back().data); // последний элемент в OUT
-                // отправляем его в Ад
-                Cache.Hash.erase(backOut);
-                Cache.Out.List.pop_back(); 
+                Cache.Erase(Cache.Out.List.back().data);
             }
             // последний элемент из In переносится в OUT
-
-            // новые изменения
             backIn->second->place = OUT;
             Cache.Out.List.splice(Cache.Out.List.begin(), Cache.In.List, backIn->second);
             
-            
+
             Cache.In.List.push_front(newPage); 
             auto hashIns = Cache.In.List.begin();
             Cache.Hash.insert({hashIns->data, hashIns} );      
@@ -117,9 +138,7 @@ bool CacheHit (caches::Cache_2Q<KeyT, Data> &Cache, Data request)
             
             if(Cache.Hot.isfull()) 
             {
-                auto backHot = Cache.Hash.find(Cache.Hot.List.back().data); // вытесняем из Hot последний элемент
-                Cache.Hash.erase(backHot); // удаляем из таблицы последний элемент из HOT 
-                Cache.Hot.List.pop_back();
+                Cache.Erase(Cache.Hot.List.back().data);
             } 
             find->second->place = HOT;
             Cache.Hot.List.splice(Cache.Hot.List.begin(), Cache.Out.List, find->second);
