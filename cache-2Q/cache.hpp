@@ -66,45 +66,38 @@ bool CacheHit (caches::Cache_2Q<KeyT, Data> &Cache, Data request)
     
     if( find == Cache.Hash.end() ) // did not find
     {
-       // std::cout << "не нашли" << std::endl;
-
         struct Node <Data> newPage;  // создаём новую страницу, которая будет помещена в кэш IN
         newPage.data = request;
         newPage.place = IN;
 
         if(Cache.In.isfull()) // если IN полон, вытесняем из IN последний элемент и отправляем его в OUT
         {
-            //std::cout << "мы в IN full" << std::endl
+
             auto backIn = Cache.Hash.find(Cache.In.List.back().data); // последний элемент в IN backIn->second //+
         
             if(Cache.Out.isfull()) // если Out полон
             {
-               // std::cout << "OUT full" << std::endl;
-                auto backOut = Cache.Hash.find(Cache.Out.List.back().data); // последний элемент в OUT //+
+                auto backOut = Cache.Hash.find(Cache.Out.List.back().data); // последний элемент в OUT
                 // отправляем его в Ад
-                Cache.Hash.erase(backOut); //+
-                Cache.Out.List.pop_back(); //+
+                Cache.Hash.erase(backOut);
+                Cache.Out.List.pop_back(); 
             }
-            // std::cout << "huy" << std::endl;
-            // в out есть место 
-
             // последний элемент из In переносится в OUT
-            Cache.Out.List.push_front( {backIn->second->data, OUT} ); //+
-            Cache.Hash.erase(backIn);
-            Cache.Hash.insert({Cache.Out.List.begin()->data, Cache.Out.List.begin()});
+            Cache.Out.List.push_front( {backIn->second->data, OUT} );  // вставляем в лист OUT
+            Cache.Hash.erase(backIn); 
             
-            Cache.In.List.pop_back(); // достаем его из листа IN
+            Cache.Hash.insert({Cache.Out.List.begin()->data, Cache.Out.List.begin()}); 
+            
+            Cache.In.List.pop_back(); 
 
             Cache.In.List.push_front(newPage); 
             auto hashIns = Cache.In.List.begin();
-            Cache.Hash.insert({hashIns->data, hashIns} ); //=        
+            Cache.Hash.insert({hashIns->data, hashIns} );      
             
         }
         
-        else // заебись
+        else 
         {
-            //std::cout << "IN не full" << std::endl;
-
             Cache.In.List.push_front(newPage);
             Cache.Hash.insert({newPage.data, Cache.In.List.begin()});
         }
@@ -122,7 +115,7 @@ bool CacheHit (caches::Cache_2Q<KeyT, Data> &Cache, Data request)
             
         if(find->second->place == OUT) // не очень работает
         {
-            //std::cout << "нашли в OUT" << std::endl;
+            
             if(Cache.Hot.isfull()) 
             {
                 auto backHot = Cache.Hash.find(Cache.Hot.List.back().data); // вытесняем из Hot последний элемент
@@ -141,13 +134,11 @@ bool CacheHit (caches::Cache_2Q<KeyT, Data> &Cache, Data request)
 
         if(find->second->place = HOT) // ready
         {
-            //std::cout << "нашли в HOT" << std::endl;
             Cache.Hot.List.splice(Cache.Hot.List.begin(), Cache.Hot.List, find->second);
             return true;
         }
-        return true;
-            
     }
+    return false;
 
 }
  
