@@ -46,7 +46,6 @@ struct Cache_2Q {
 
     size_t sizeCache;
 
-    
     using ListIt = typename std::list<struct Node<Data>>::iterator;
     std::unordered_map<KeyT, ListIt> Hash;
 
@@ -117,7 +116,36 @@ void Request_notFound(caches::Cache_2Q<KeyT, Data> &Cache, typename std::unorder
             Cache.Hash.insert({newPage.data, Cache.In.List.begin()});
         }
 };
+//.....................................................
+//.....................................................
+template <typename KeyT, typename Data> 
+void Request_Found(caches::Cache_2Q<KeyT, Data> &Cache, typename std::unordered_map<KeyT, typename std::list<struct Node<Data>>::iterator>::iterator &find)
+{
+    if(find->second->place == IN)
+    {
+        return;
+    }
+            
+    if(find->second->place == OUT) 
+    {
+            
+        if(Cache.Hot.isfull()) 
+        {
+            Cache.Erase(Cache.Hot.List.back().data);
+        } 
+        find->second->place = HOT;
+        Cache.Hot.List.splice(Cache.Hot.List.begin(), Cache.Out.List, find->second);
+        return;
+    }
 
+    if(find->second->place = HOT) // ready
+    {
+        Cache.Hot.List.splice(Cache.Hot.List.begin(), Cache.Hot.List, find->second);
+        return;
+    }
+};
+//.....................................................
+//.....................................................
 template <typename KeyT, typename Data>
 bool CacheHit (caches::Cache_2Q<KeyT, Data> &Cache, Data request)
 {    
@@ -129,33 +157,11 @@ bool CacheHit (caches::Cache_2Q<KeyT, Data> &Cache, Data request)
         Request_notFound(Cache, find, request);
         return false;   
     }
-    
+
     else // нашли
     {
-        if(find->second->place == IN)
-        {
-            return true;
-        }
-            
-        if(find->second->place == OUT) 
-        {
-            
-            if(Cache.Hot.isfull()) 
-            {
-                Cache.Erase(Cache.Hot.List.back().data);
-            } 
-            find->second->place = HOT;
-            Cache.Hot.List.splice(Cache.Hot.List.begin(), Cache.Out.List, find->second);
-            return true;
-        }
-
-        if(find->second->place = HOT) // ready
-        {
-            Cache.Hot.List.splice(Cache.Hot.List.begin(), Cache.Hot.List, find->second);
-            return true;
-        }
+        Request_Found(Cache, find);
+        return true;
     }
-    return false;
-
-}
+};
  
