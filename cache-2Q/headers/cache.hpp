@@ -93,7 +93,7 @@ void Request_notFound(caches::Cache_2Q<KeyT, Data> &Cache, typename std::unorder
 
     if(Cache.In.isfull()) 
     {
-        
+
         auto backIn = Cache.Hash.find(Cache.In.List.back().data); 
         
         if(Cache.Out.isfull()) 
@@ -107,13 +107,13 @@ void Request_notFound(caches::Cache_2Q<KeyT, Data> &Cache, typename std::unorder
         Cache.In.List.push_front(newPage); 
         auto hashIns = Cache.In.List.begin();
         Cache.Hash.insert({hashIns->data, hashIns} );      
-        }
+    }
         
-        else 
-        {
-            Cache.In.List.push_front(newPage);
-            Cache.Hash.insert({newPage.data, Cache.In.List.begin()});
-        }
+    else 
+    {
+        Cache.In.List.push_front(newPage);
+        Cache.Hash.insert({newPage.data, Cache.In.List.begin()});
+    }
 };
 //.....................................................
 //.....................................................
