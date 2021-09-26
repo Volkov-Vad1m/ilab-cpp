@@ -34,16 +34,24 @@ int main () {
         }
 
         size_t cacheSize = 0;
-        size_t numPages  = 0;
+        size_t numRequest  = 0;
 
-        std::cin >> cacheSize >> numPages;
+        std::cin >> cacheSize >> numRequest;
         assert(std::cin.good());
 
-        caches::Cache_2Q<int, int> Cache{cacheSize};
+        caches::Cache_2Q<int, int> ch{cacheSize};
+        int hits = 0;
+        int request = 0;
 
-        int result = CacheHit<int, int> (numPages);
-
-        std::cout <<"Result is : " << result << std::endl;
+        for(int i = 0; i < numRequest; i++)
+        {
+            std::cin >> request;
+            if( CacheHit <int, int> (ch, request) )
+            {
+                hits += 1;
+            }
+        } 
+        std::cout <<"Result is : " << hits << std::endl;
         finish = get_time();
 
         std::cout << "\t\tTest [" << i + 1 <<"] time: " << finish - start << std::endl;
@@ -52,13 +60,13 @@ int main () {
 
         std::cin >> trueResult;
 
-        if (trueResult == result) {
+        if (trueResult == hits) {
 
             std::cout << "\t\t\t\tTest [" << i + 1<< "]: PASSED\n\n";
         }
         else {
 
-            std::cout << "\t\tTest [" << i + 1 << "]: WRONG ANSWER\n" << "Result is " << trueResult <<" but expected one is " << result << "\n\n";
+            std::cout << "\t\tTest [" << i + 1 << "]: WRONG ANSWER\n" << "Result is " << trueResult <<" but expected one is " << hits << "\n\n";
         }
 
         fclose (ftest);

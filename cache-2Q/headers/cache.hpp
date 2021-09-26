@@ -27,10 +27,9 @@ namespace caches {
 template <typename Data> 
 struct QueueMap {
 
-    size_t sizeList; // размер листа
-    std::list<struct Node<Data>> List; // сам лист 
+    size_t sizeList;
+    std::list<struct Node<Data>> List; 
     
-    // constructor 
     QueueMap(size_t sz) : sizeList(sz) {}
 
     bool isfull()
@@ -56,10 +55,10 @@ struct Cache_2Q {
     QueueMap <Data> Hot {sizeCache / 5};
 
 
-    void Erase (Data data) // удаляет из кэша по данным
+    void Erase (Data data) 
     {
         auto delPage = Hash.find(data);
-        if(delPage == Hash.end()) // did not find
+        if(delPage == Hash.end()) 
             return;
 
         auto delList = delPage->second;
@@ -88,20 +87,20 @@ struct Cache_2Q {
 template <typename KeyT, typename Data> 
 void Request_notFound(caches::Cache_2Q<KeyT, Data> &Cache, typename std::unordered_map<KeyT, typename std::list<struct Node<Data>>::iterator>::iterator &find, Data request)
 {
-    struct Node <Data> newPage;  // создаём новую страницу, которая будет помещена в кэш IN
-    newPage.data = request; // request
+    struct Node <Data> newPage; 
+    newPage.data = request; 
     newPage.place = IN;
 
-    if(Cache.In.isfull()) // если IN полон, вытесняем из IN последний элемент и отправляем его в OUT
+    if(Cache.In.isfull()) 
     {
 
-        auto backIn = Cache.Hash.find(Cache.In.List.back().data); // последний элемент в IN backIn->second //+
+        auto backIn = Cache.Hash.find(Cache.In.List.back().data); 
         
-        if(Cache.Out.isfull()) // если Out полон
+        if(Cache.Out.isfull()) 
         {
             Cache.Erase(Cache.Out.List.back().data);
         }
-            // последний элемент из In переносится в OUT
+
         backIn->second->place = OUT;
         Cache.Out.List.splice(Cache.Out.List.begin(), Cache.In.List, backIn->second);
             
@@ -138,7 +137,7 @@ void Request_Found(caches::Cache_2Q<KeyT, Data> &Cache, typename std::unordered_
         return;
     }
 
-    if(find->second->place = HOT) // ready
+    if(find->second->place = HOT) 
     {
         Cache.Hot.List.splice(Cache.Hot.List.begin(), Cache.Hot.List, find->second);
         return;
@@ -152,13 +151,13 @@ bool CacheHit (caches::Cache_2Q<KeyT, Data> &Cache, Data request)
     
     auto find = Cache.Hash.find(request);
     
-    if( find == Cache.Hash.end() ) // did not find
+    if( find == Cache.Hash.end() ) 
     {
         Request_notFound(Cache, find, request);
         return false;   
     }
 
-    else // нашли
+    else 
     {
         Request_Found(Cache, find);
         return true;
