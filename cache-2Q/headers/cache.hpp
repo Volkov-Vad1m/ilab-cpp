@@ -22,6 +22,10 @@ struct Node
 };
 //.....................................................
 //.....................................................
+template <typename Data>
+using ListIt = typename std::list<struct Node<Data>>::iterator;
+//.....................................................
+//.....................................................
 namespace caches {
 
 template <typename Data> 
@@ -45,8 +49,7 @@ struct Cache_2Q {
 
     size_t sizeCache;
 
-    using ListIt = typename std::list<struct Node<Data>>::iterator;
-    std::unordered_map<KeyT, ListIt> Hash;
+    std::unordered_map<KeyT, ListIt<Data>> Hash;
 
     Cache_2Q(size_t sz) : sizeCache(sz) {}
     
@@ -85,7 +88,7 @@ struct Cache_2Q {
 //.....................................................
 //.....................................................
 template <typename KeyT, typename Data> 
-void Request_notFound(caches::Cache_2Q<KeyT, Data> &Cache, typename std::unordered_map<KeyT, typename std::list<struct Node<Data>>::iterator>::iterator &find, Data request)
+void Request_notFound(caches::Cache_2Q<KeyT, Data> &Cache, typename std::unordered_map<KeyT, ListIt<Data>>::iterator &find, Data request)
 {
     struct Node <Data> newPage; 
     newPage.data = request; 
@@ -118,7 +121,7 @@ void Request_notFound(caches::Cache_2Q<KeyT, Data> &Cache, typename std::unorder
 //.....................................................
 //.....................................................
 template <typename KeyT, typename Data> 
-void Request_Found(caches::Cache_2Q<KeyT, Data> &Cache, typename std::unordered_map<KeyT, typename std::list<struct Node<Data>>::iterator>::iterator &find)
+void Request_Found(caches::Cache_2Q<KeyT, Data> &Cache, typename std::unordered_map<KeyT, ListIt<Data>>::iterator &find)
 {
     if(find->second->place == IN)
     {
