@@ -1,5 +1,10 @@
 #include "../headers/cache.hpp"
 
+int slow_get_page(int request)
+{
+    return request;
+};
+
 int main()
 {
     size_t sz;
@@ -23,6 +28,6 @@ int main()
     } 
    
     std::cout << hits << std::endl;
-    
+
     return 0;
 }

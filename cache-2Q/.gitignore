@@ -11,3 +11,5 @@
 *.ko
 *.obj
 *.elf
+
+.vscode

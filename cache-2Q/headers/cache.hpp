@@ -22,10 +22,6 @@ struct Node
 };
 //.....................................................
 //.....................................................
-template <typename Data>
-using ListIt = typename std::list<struct Node<Data>>::iterator;
-//.....................................................
-//.....................................................
 namespace caches {
 
 template <typename Data> 
@@ -49,7 +45,12 @@ struct Cache_2Q {
 
     size_t sizeCache;
 
-    std::unordered_map<KeyT, ListIt<Data>> Hash;
+    using ListIt = typename std::list<struct Node<Data>>::iterator;
+    using HashIt = typename std::unordered_map<KeyT, ListIt>::iterator;
+
+    std::unordered_map<KeyT, ListIt> Hash;
+
+    
 
     Cache_2Q(size_t sz) : sizeCache(sz) {}
     
@@ -57,10 +58,11 @@ struct Cache_2Q {
     QueueMap <Data> Out {sizeCache - sizeCache / 5 - sizeCache / 5};
     QueueMap <Data> Hot {sizeCache / 5};
 
-
-    void Erase (Data data) 
+    //.....................................................
+    //.....................................................
+    void Erase (KeyT key) 
     {
-        auto delPage = Hash.find(data);
+        auto delPage = Hash.find(key);
         if(delPage == Hash.end()) 
             return;
 
@@ -82,70 +84,70 @@ struct Cache_2Q {
 
         return;
     };
-};
-
-};
-//.....................................................
-//.....................................................
-template <typename KeyT, typename Data> 
-void Request_notFound(caches::Cache_2Q<KeyT, Data> &Cache, typename std::unordered_map<KeyT, ListIt<Data>>::iterator &find, Data request)
-{
-    struct Node <Data> newPage; 
-    newPage.data = request; 
-    newPage.place = IN;
-
-    if(Cache.In.isfull()) 
+    //.....................................................
+    //.....................................................
+    void Request_notFound(HashIt &find, Data request)
     {
+        struct Node <Data> newPage; 
+        newPage.data = request; 
+        newPage.place = IN;
 
-        auto backIn = Cache.Hash.find(Cache.In.List.back().data); 
-        
-        if(Cache.Out.isfull()) 
+        if(In.isfull()) 
         {
-            Cache.Erase(Cache.Out.List.back().data);
+
+            auto backIn = Hash.find(In.List.back().data); 
+        
+            if(Out.isfull()) 
+            {
+                Erase(Out.List.back().data);
+            }
+
+            backIn->second->place = OUT;
+            Out.List.splice(Out.List.begin(), In.List, backIn->second);
+            
+            In.List.push_front(newPage); 
+            auto hashIns = In.List.begin();
+            Hash.insert({hashIns->data, hashIns} );      
+        }
+        
+        else 
+        {
+            In.List.push_front(newPage);
+            Hash.insert({newPage.data, In.List.begin()});
+        }
+    };
+    //.....................................................
+    //.....................................................
+    void Request_Found(HashIt &find)
+    {
+        if(find->second->place == IN)
+        {
+            return;
+        }
+            
+        if(find->second->place == OUT) 
+        {
+                
+            if(Hot.isfull()) 
+            {
+                Erase(Hot.List.back().data);
+            } 
+            find->second->place = HOT;
+            Hot.List.splice(Hot.List.begin(), Out.List, find->second);
+            return;
         }
 
-        backIn->second->place = OUT;
-        Cache.Out.List.splice(Cache.Out.List.begin(), Cache.In.List, backIn->second);
-            
-        Cache.In.List.push_front(newPage); 
-        auto hashIns = Cache.In.List.begin();
-        Cache.Hash.insert({hashIns->data, hashIns} );      
-    }
-        
-    else 
-    {
-        Cache.In.List.push_front(newPage);
-        Cache.Hash.insert({newPage.data, Cache.In.List.begin()});
-    }
-};
-//.....................................................
-//.....................................................
-template <typename KeyT, typename Data> 
-void Request_Found(caches::Cache_2Q<KeyT, Data> &Cache, typename std::unordered_map<KeyT, ListIt<Data>>::iterator &find)
-{
-    if(find->second->place == IN)
-    {
-        return;
-    }
-            
-    if(find->second->place == OUT) 
-    {
-            
-        if(Cache.Hot.isfull()) 
+        if(find->second->place = HOT) 
         {
-            Cache.Erase(Cache.Hot.List.back().data);
-        } 
-        find->second->place = HOT;
-        Cache.Hot.List.splice(Cache.Hot.List.begin(), Cache.Out.List, find->second);
-        return;
-    }
+            Hot.List.splice(Hot.List.begin(), Hot.List, find->second);
+            return;
+        }
+    };
+    
+    
+}; // end Cache_2Q
 
-    if(find->second->place = HOT) 
-    {
-        Cache.Hot.List.splice(Cache.Hot.List.begin(), Cache.Hot.List, find->second);
-        return;
-    }
-};
+}; // end namespace caches
 //.....................................................
 //.....................................................
 template <typename KeyT, typename Data>
@@ -156,14 +158,13 @@ bool CacheHit (caches::Cache_2Q<KeyT, Data> &Cache, Data request)
     
     if( find == Cache.Hash.end() ) 
     {
-        Request_notFound(Cache, find, request);
+        Cache.Request_notFound(find, request);
         return false;   
     }
 
     else 
-    {
-        Request_Found(Cache, find);
+    {   
+        Cache.Request_Found(find);
         return true;
     }
 };
- 
