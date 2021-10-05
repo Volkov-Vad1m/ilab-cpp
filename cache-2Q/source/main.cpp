@@ -21,7 +21,7 @@ int main()
     for(int i = 0; i < numRequest; i++)
     {
         std::cin >> request;
-        if( CacheHit <int, int> (ch, request) )
+        if( ch.CacheHit(request, slow_get_page) )
         {
             hits += 1;
         }

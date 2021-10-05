@@ -54,8 +54,8 @@ struct Cache_2Q {
 
     Cache_2Q(size_t sz) : sizeCache(sz) {}
     
-    QueueMap <Data> In {sizeCache / 5};
-    QueueMap <Data> Out {sizeCache - sizeCache / 5 - sizeCache / 5};
+    QueueMap <Data> In {sizeCache - (3 * (sizeCache / 5)) - (sizeCache / 5)};
+    QueueMap <Data> Out { 3 * (sizeCache / 5 ) };
     QueueMap <Data> Hot {sizeCache / 5};
 
     //.....................................................
@@ -143,28 +143,27 @@ struct Cache_2Q {
             return;
         }
     };
-    
+    //.....................................................
+    //.....................................................
+    bool CacheHit (KeyT key, Data (*slow_get_page)(KeyT))
+    {    
+        auto find = Hash.find(key);
+        
+        if( find == Hash.end() ) 
+        {
+
+            Request_notFound(find, slow_get_page(key));
+            return false;   
+        }
+
+        else 
+        {   
+            Request_Found(find);
+            return true;
+        }
+    };
     
 }; // end Cache_2Q
 
 }; // end namespace caches
-//.....................................................
-//.....................................................
-template <typename KeyT, typename Data>
-bool CacheHit (caches::Cache_2Q<KeyT, Data> &Cache, Data request)
-{    
-    
-    auto find = Cache.Hash.find(request);
-    
-    if( find == Cache.Hash.end() ) 
-    {
-        Cache.Request_notFound(find, request);
-        return false;   
-    }
 
-    else 
-    {   
-        Cache.Request_Found(find);
-        return true;
-    }
-};
