@@ -94,26 +94,36 @@ struct Cache_2Q {
 
         if(In.isfull()) 
         {
-
             auto backIn = Hash.find(In.List.back().data); 
-        
-            if(Out.isfull()) 
+            if(Out.sizeList == 0)
+            {
+                Hash.erase(backIn);
+                In.List.pop_back(); // в ад
+                In.List.push_front(newPage); 
+                auto hashIns = In.List.begin();
+                Hash.insert({hashIns->data, hashIns} );     
+                return; 
+            }
+
+            if(Out.isfull())  // фикс
             {
                 Erase(Out.List.back().data);
             }
-
             backIn->second->place = OUT;
             Out.List.splice(Out.List.begin(), In.List, backIn->second);
             
+
             In.List.push_front(newPage); 
             auto hashIns = In.List.begin();
-            Hash.insert({hashIns->data, hashIns} );      
+            Hash.insert({hashIns->data, hashIns} );     
+            return; 
         }
         
         else 
         {
             In.List.push_front(newPage);
             Hash.insert({newPage.data, In.List.begin()});
+            return;
         }
     };
     //.....................................................
