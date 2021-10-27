@@ -17,12 +17,12 @@ struct Box;
 struct Point;
 
 struct Point {
-    float x_, y_, z_;
+    float coord_[3]; // (x, y ,z)
 
-    Point(float x = 0, float y = 0, float z = 0) : x_(x), y_(y), z_(z) {}
+    Point(float x = 0, float y = 0, float z = 0) : coord_{x, y , z} {};
 
     void point_print() {
-        std::cout << "(" << x_ << "; " << y_ << "; " << z_ << ")" << std::endl;
+        std::cout << "(" << coord_[0] << "; " << coord_[1] << "; " << coord_[2] << ")" << std::endl;
         return;
     };
 
@@ -39,23 +39,22 @@ struct Box {
 
     Box(Point l, Point r) : left_(l), right_(r) {
         get_centre();
-        sizeSide_ = right_.x_ - left_.x_;
+        sizeSide_ = right_.coord_[0] - left_.coord_[0];
     }
     Box() {};
 
-    void get_centre()
-    {
-        centre_.x_ = (left_.x_ + right_.x_) / 2; 
-        centre_.y_ = (left_.y_ + right_.y_) / 2;
-        centre_.z_ = (left_.z_ + right_.z_) / 2;
+    void get_centre() {
+        for(int i = 0; i < 3; i++)
+            centre_.coord_[i] = (left_.coord_[i] + right_.coord_[i]) / 2;
     }
 };
 //....................................................
 //....................................................
 bool Point::point_in_octant(Box &region) {
-        return (x_ > region.left_.x_) && (x_ < region.right_.x_) &&
-               (y_ > region.left_.y_) && (y_ < region.right_.y_) &&
-               (z_ > region.left_.z_) && (z_ < region.right_.z_)  ;
+    bool result = true;
+    for(int i = 0; i < 3; i++)
+        result = result && ( ( coord_[i] > region.left_.coord_[i]) && (coord_[i] < region.right_.coord_[i]) ); 
+    return result;
 }
 //....................................................
 //....................................................
@@ -70,9 +69,9 @@ struct Triangle {
         // вычесляем центр треугольника
         triangleCentre_;
         for(int i = 0; i < 3; i++) {
-            triangleCentre_.x_ += pt_[i].x_ / 3;
-            triangleCentre_.y_ += pt_[i].y_ / 3;
-            triangleCentre_.z_ += pt_[i].z_ / 3;
+            for(int j = 0; j < 3; j++) {
+                triangleCentre_.coord_[j] += pt_[i].coord_[j] / 3;
+            }
         }
     };
 
@@ -107,45 +106,31 @@ public:
     //..............................................
     void get_blockNum() // записывает в blockNum номер, где находится узел относительно parent
     { 
-        blockNum_ = (region_.centre_.x_ > parent_->region_.centre_.x_) << 2 |
-                    (region_.centre_.y_ > parent_->region_.centre_.y_) << 1 | 
-                    (region_.centre_.z_ > parent_->region_.centre_.z_);
+        blockNum_ = (region_.centre_.coord_[0] > parent_->region_.centre_.coord_[0]) << 2 |
+                    (region_.centre_.coord_[1] > parent_->region_.centre_.coord_[1]) << 1 | 
+                    (region_.centre_.coord_[2] > parent_->region_.centre_.coord_[2]);
     };
     //..............................................
     //..............................................
     void get_region()
     {
+        int bit_mask[3] = {7, 2, 1}; // 100b, 010b, 001b.
         auto& prt = parent_->region_;
-        if (blockNum_ & 7) {
 
-            region_.left_.x_ = ( prt.left_.x_ + prt.right_.x_ ) / 2;
-            region_.right_.x_ = prt.right_.x_;
-        }
-        else {
-            region_.left_.x_ = region_.left_.x_;
-            region_.right_.x_ = ( prt.left_.x_ + prt.right_.x_ ) / 2;
-        }
+        for(int i = 0; i < 3; i++) { // порядок x, y ,z
 
-        if (blockNum_ & 2) {
+            if(blockNum_ & bit_mask[i]) {
+                region_.left_.coord_[i] = ( prt.left_.coord_[i] + prt.right_.coord_[i] ) / 2;
+                region_.right_.coord_[i] = prt.right_.coord_[i];
+            }
 
-            region_.left_.y_ = ( prt.left_.y_ + prt.right_.y_ ) / 2;
-            region_.right_.y_ = prt.right_.y_;
-        }
-        else {
-            region_.left_.y_ = region_.left_.y_;
-            region_.right_.y_ = ( prt.left_.y_ + prt.right_.y_ ) / 2;
+            else {
+                region_.left_.coord_[i] = region_.left_.coord_[i];
+                region_.right_.coord_[i] = ( prt.left_.coord_[i] + prt.right_.coord_[i] ) / 2;
+            }
         }
 
-        if (blockNum_ & 1) {
-
-            region_.left_.z_ = ( prt.left_.z_ + prt.right_.z_ ) / 2;
-            region_.right_.z_ = prt.right_.z_;
-        }
-        else {
-            region_.left_.z_ = region_.left_.z_;
-            region_.right_.z_ = ( prt.left_.z_ + prt.right_.z_ ) / 2;
-        }
-        region_.sizeSide_ = region_.right_.x_ - region_.left_.x_; 
+        region_.sizeSide_ = region_.right_.coord_[0] - region_.left_.coord_[0]; 
         region_.get_centre();
     }
     //..............................................
@@ -158,9 +143,9 @@ public:
             return; 
         }
 
-        int blockNum = (tr.triangleCentre_.x_ > region_.centre_.x_) << 2 |
-                       (tr.triangleCentre_.y_ > region_.centre_.y_) << 1 | 
-                       (tr.triangleCentre_.z_ > region_.centre_.z_); // номер блока, куда попал центр треугольника
+        int blockNum = (tr.triangleCentre_.coord_[0] > region_.centre_.coord_[0]) << 2 |
+                       (tr.triangleCentre_.coord_[1] > region_.centre_.coord_[1]) << 1 | 
+                       (tr.triangleCentre_.coord_[2] > region_.centre_.coord_[2]); // номер блока, куда попал центр треугольника
                        std::cout << blockNum << std::endl;
         // мы будем вставлять именно в этот октант, проверяя что все 3 точки полностью попадают в него.
         // если это не так, прекращаем вставку треугольника
