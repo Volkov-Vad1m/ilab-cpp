@@ -1,22 +1,39 @@
 #include <iostream>
-#include "hw3d.hpp"
+#include "tree.hpp"
 
-int main()
-{
+int main() {
     Point arr[3];
-    arr[0] = {- 1};
-    arr[1] = {1, 1};
-    arr[2] = {0, 0, -1};
-    for(int i = 0; i<3; i++)
-        arr[i].point_print();
+    arr[0] = {0.5, 0.5, 0.5};
+    arr[1] = {0.5, 0.5, 0.5};
+    arr[2] = {0.5, 0.5, 0.5};
 
     Triangle t1{arr[0], arr[1], arr[2]};
 
-    OctTree*  tree = new OctTree; 
-    tree->root_->region_.centre_.point_print();
-    tree->root_->insert_triangle(t1);
-    tree->root_->childs_[2]->region_.centre_.point_print();
-    std::cout << tree->root_->childs_[2]->blockNum_ << std::endl;
+    // OctTree*  tree = new OctTree; 
+    // tree->root_->region_.centre_.point_print();
+    // tree->root_->insert_triangle(t1);
+    // tree->root_->childs_[2]->region_.centre_.point_print();
+    // std::cout << tree->root_->childs_[2]->blockNum_ << std::endl;
+    Point pt = {99, 99, 102};
+    Point l = {-100, -100, -100};
+    Point r = {120, 120, 131};
+    Box reg{l, r};
+    
+    OctNode* node = new OctNode{};
+   // std::cout << node->region_.left_.coord_[0] << std::endl;
+    //std::cout << node->childs_[1] << std::endl;
+    OctNode* node1 = new OctNode{node, 7};
 
+    //node1->region_.left_.point_print();
+    //node1->region_.right_.point_print();
+   // node->insert_triangle(t1);
+   // std::cout << node->childs_[0]->objects_[0].triangle_print() << std::endl;
+   //node->region_.left_.point_print();
+   //node->region_.right_.point_print();
+   //std::cout << node->triagle_in_box(t1, node->region_) << std::endl;
+   std::cout << "dump start\n";
+    node->dump_tree();
+    std::cout << "dump end\n";
+   return 0;
 }
 
