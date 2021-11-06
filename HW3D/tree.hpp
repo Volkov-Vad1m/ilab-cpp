@@ -70,13 +70,19 @@ struct Triangle {
             }
         }
     };
-
+    //....................................................
+    //....................................................
     void triangle_print() { // {{correctly}}
         for(int i = 0; i < 3; i++) {
             pt_[i].point_print();
         }
     };
+    //....................................................
+    //....................................................
+
 };
+
+
 
 //....................................................
 //....................................................
@@ -84,7 +90,7 @@ class OctNode
 {
 public:
     OctNode* parent_; 
-    OctNode* childs_[8];
+    OctNode* childs_[8] {};
     int blockNum_; //номер блока по отношению к parent, 
     Box region_; // размеры куба
     //int level_; // уровень относительно root
@@ -92,12 +98,18 @@ public:
 public:
     OctNode() {
         std::cout << "default" << std::endl;
-        region_ = { {0, 0, 0} , {4, 4, 4}};
+        region_ = { {-2, -2, -2} , {2, 2, 2}};
     }
     OctNode(OctNode* prnt, int block) : parent_(prnt), blockNum_(block) { // block - в каком октанте относительно parent {{correctly}}
         get_region();   
         prnt->childs_[block] = this; 
     }
+    ~OctNode() {
+        for(int i = 0; i < 8; i++) {
+            delete childs_[i];
+        }
+    }
+    
     //..............................................
     //записывает в blockNum номер, где находится узел относительно parent
     void get_blockNum() // не знаю, надо ли это вообще
@@ -121,7 +133,7 @@ public:
             }
 
             else {
-                region_.left_.coord_[i] = region_.left_.coord_[i];
+                region_.left_.coord_[i] = prt.left_.coord_[i];
                 region_.right_.coord_[i] = ( prt.left_.coord_[i] + prt.right_.coord_[i] ) / 2;
             }
         }
@@ -131,9 +143,9 @@ public:
     }
     //..............................................
     //..............................................
-     bool triagle_in_box(Triangle tr, Box region) {
+     bool triangle_in_box(Triangle tr, Box region) { // {{correctly}}
         bool result = 1;
-        for(int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; i++) {
             result = result && tr.pt_[i].point_in_box(region);
         }
         return result;
@@ -142,7 +154,6 @@ public:
     //..............................................
     void insert_triangle(Triangle tr) {
         std::cout << "start\n" ;
-
         region_.left_.point_print();
         region_.right_.point_print();
 
@@ -159,18 +170,22 @@ public:
                        std::cout << blockNum << "номер блока" << std::endl;
         // мы будем вставлять именно в этот октант, проверяя что все 3 точки полностью попадают в него.
         // если это не так, прекращаем вставку треугольника
-        if( triagle_in_box(tr, region_) ) { // если треугольник полностью попал в octant, продолжаем вставку
-        std::cout << "вызов" <<std::endl;
-            if (childs_[blockNum] == nullptr) {// мы в самом низу дерева
-                childs_[blockNum] = new OctNode{this, blockNum}; // хуйня 
-                 std::cout << "не создана нода\n";
-            }
+        if (childs_[blockNum] == nullptr) {// мы в самом низу дерева
+            childs_[blockNum] = new OctNode{this, blockNum}; // хуйня 
+            std::cout << "не создана нода\n";
+            childs_[blockNum]->region_.left_.point_print();
+            childs_[blockNum]->region_.right_.point_print();
+            std::cout << "\n\n";
+
+        }
+
+        if( triangle_in_box(tr, childs_[blockNum]->region_) ) { // если треугольник полностью попал в octant, продолжаем вставку // вместо region_ childs[blocknum] region
             std::cout << "вставляем" <<std::endl;
             childs_[blockNum]->insert_triangle(tr);
             return;
-           
         }
         else {
+            std::cout << "хуй\n";
             objects_.push_back(tr);
             return; 
         }
@@ -192,7 +207,7 @@ public:
         for (int i = 0; i < 8; ++i) {
             if(!childs_[i])
                 continue;
-
+            std::cout << " номер " << i << std::endl;
             childs_[i]->dump_tree();
         }
     }
