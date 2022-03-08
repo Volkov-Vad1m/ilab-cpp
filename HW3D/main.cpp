@@ -36,7 +36,7 @@ int main() {
     // std::cout << node->triangle_in_box(t1, node->region_) << std::endl;
    // std::cout << "point in octant " << pt.point_in_box(reg) << std::endl;
     std::cout << "dump start\n";
-    //node->dump_tree();
+    node->dump_tree();
     std::cout << "dump end\n";
     delete node;
     delete prt;
